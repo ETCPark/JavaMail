@@ -22,20 +22,18 @@ public class SendMailAcceUtils {
     /**
      * 发送带附件的邮件
      *
+     * @param from     发件人
+     * @param authCode 授权码
      * @param receive  收件人
      * @param subject  邮件主题
      * @param msg      邮件内容
      * @param filename 附件地址，本地文件
      * @return boolean
      */
-    public static boolean sendQQMail(String receive, String subject, String msg, String filename) {
+    public static boolean sendQQMail(String from, String authCode, String receive, String subject, String msg, String filename) {
         if (receive != null) {
             return false;
         }
-        // 发件人电子邮箱
-        final String from = "258702177@qq.com";
-        // 发件人电子邮箱授权码
-        final String pass = "xxxxxxxxxuuxxxxx";
 
         // 指定发送邮件的主机为 smtp.qq.com
         String host = "smtp.qq.com"; // 邮件服务器
@@ -74,16 +72,18 @@ public class SendMailAcceUtils {
             // 设置文本消息部分
             multipart.addBodyPart(messageBodyPart);
 
-            // 附件部分
-            messageBodyPart = new MimeBodyPart();
-            // 设置要发送附件的文件路径
-            DataSource source = new FileDataSource(filename);
-            messageBodyPart.setDataHandler(new DataHandler(source));
+            if(filename != null){
+                // 附件部分
+             messageBodyPart = new MimeBodyPart();
+             // 设置要发送附件的文件路径
+             DataSource source = new FileDataSource(filename);
+             messageBodyPart.setDataHandler(new DataHandler(source));
 
-            // messageBodyPart.setFileName(filename);
-            // 处理附件名称中文（附带文件路径）乱码问题
-            messageBodyPart.setFileName(MimeUtility.encodeText(filename));
-            multipart.addBodyPart(messageBodyPart);
+             // messageBodyPart.setFileName(filename);
+             // 处理附件名称中文（附带文件路径）乱码问题
+             messageBodyPart.setFileName(MimeUtility.encodeText(filename));
+             multipart.addBodyPart(messageBodyPart); 
+            }
 
             // 发送完整消息
             message.setContent(multipart);
@@ -91,148 +91,12 @@ public class SendMailAcceUtils {
             // 得到邮差对象
             Transport transport = session.getTransport();
             // 连接自己的邮箱账户
-            transport.connect(from, pass);// 密码为QQ邮箱开通的stmp服务后得到的客户端授权码
+            transport.connect(from, authCode);// 密码为QQ邮箱开通的stmp服务后得到的客户端授权码
             // 发送邮件
             transport.sendMessage(message, message.getAllRecipients());
             transport.close();
             return true;
         } catch (MessagingException | UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-    
-    public static boolean sendQQMail(Stirng from, String receive, String subject, String msg, String filename) {
-        if (receive != null) {
-            return false;
-        }
- 
-        // 发件人电子邮箱授权码
-        final String pass = "xxxxxxxxxuuxxxxx";
-
-        // 指定发送邮件的主机为 smtp.qq.com
-        String host = "smtp.qq.com"; // 邮件服务器
-
-        // 获取系统属性
-        Properties properties = System.getProperties();
-
-        // 设置邮件服务器
-        properties.setProperty("mail.smtp.host", host);
-        properties.put("mail.transport.protocol", "smtp");// 连接协议
-        properties.put("mail.smtp.host", host);// 主机名
-        properties.put("mail.smtp.port", 465);// 端口号
-        properties.put("mail.smtp.auth", "true");
-        properties.put("mail.smtp.ssl.enable", "true");// 设置是否使用ssl安全连接 ---一般都使用
-        properties.put("mail.debug", "true");// 设置是否显示debug信息 true 会在控制台显示相关信息
-        try {
-            // 得到回话对象
-            Session session = Session.getInstance(properties);
-            // 获取邮件对象
-            Message message = new MimeMessage(session);
-            // 设置发件人邮箱地址
-            message.setFrom(new InternetAddress(from));
-            // 设置收件人邮箱地址
-            //message.setRecipients(Message.RecipientType.TO, new InternetAddress[]{new InternetAddress(receive), new InternetAddress(receive), new InternetAddress(receive)});
-            message.setRecipient(Message.RecipientType.TO, new InternetAddress(receive));//一个收件人
-            // 设置邮件标题
-            message.setSubject(subject);
-            // 创建消息部分
-            BodyPart messageBodyPart = new MimeBodyPart();
-            // 消息
-            messageBodyPart.setText(msg);
-
-            // 创建多重消息
-            Multipart multipart = new MimeMultipart();
-
-            // 设置文本消息部分
-            multipart.addBodyPart(messageBodyPart);
-
-            // 附件部分
-            messageBodyPart = new MimeBodyPart();
-            // 设置要发送附件的文件路径
-            DataSource source = new FileDataSource(filename);
-            messageBodyPart.setDataHandler(new DataHandler(source));
-
-            // messageBodyPart.setFileName(filename);
-            // 处理附件名称中文（附带文件路径）乱码问题
-            messageBodyPart.setFileName(MimeUtility.encodeText(filename));
-            multipart.addBodyPart(messageBodyPart);
-
-            // 发送完整消息
-            message.setContent(multipart);
-
-            // 得到邮差对象
-            Transport transport = session.getTransport();
-            // 连接自己的邮箱账户
-            transport.connect(from, pass);// 密码为QQ邮箱开通的stmp服务后得到的客户端授权码
-            // 发送邮件
-            transport.sendMessage(message, message.getAllRecipients());
-            transport.close();
-            return true;
-        } catch (MessagingException | UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
-
-    /***
-     * 不带有附件的方法
-     * 可以将发送者封装提取出来，作为入参
-     * **/
-    public static boolean sendQQMailWithOutFile(String from ,String pass,String receive, String subject, String msg) {
-        if (receive != null) {
-            return false;
-        }
-
-        // 指定发送邮件的主机为 smtp.qq.com
-        String host = "smtp.qq.com"; // 邮件服务器
-
-        // 获取系统属性
-        Properties properties = System.getProperties();
-
-        // 设置邮件服务器
-        properties.setProperty("mail.smtp.host", host);
-        properties.put("mail.transport.protocol", "smtp");// 连接协议
-        properties.put("mail.smtp.host", host);// 主机名
-        properties.put("mail.smtp.port", 465);// 端口号
-        properties.put("mail.smtp.auth", "true");
-        properties.put("mail.smtp.ssl.enable", "true");// 设置是否使用ssl安全连接 ---一般都使用
-        properties.put("mail.debug", "true");// 设置是否显示debug信息 true 会在控制台显示相关信息
-        try {
-            // 得到回话对象
-            Session session = Session.getInstance(properties);
-            // 获取邮件对象
-            Message message = new MimeMessage(session);
-            // 设置发件人邮箱地址
-            message.setFrom(new InternetAddress(from));
-            // 设置收件人邮箱地址
-            //message.setRecipients(Message.RecipientType.TO, new InternetAddress[]{new InternetAddress(receive), new InternetAddress(receive), new InternetAddress(receive)});
-            message.setRecipient(Message.RecipientType.TO, new InternetAddress(receive));//一个收件人
-            // 设置邮件标题
-            message.setSubject(subject);
-            // 创建消息部分
-            BodyPart messageBodyPart = new MimeBodyPart();
-            // 消息
-            messageBodyPart.setText(msg);
-
-            // 创建多重消息
-            Multipart multipart = new MimeMultipart();
-
-            // 设置文本消息部分
-            multipart.addBodyPart(messageBodyPart);
-            // 发送完整消息
-            message.setContent(multipart);
-
-            // 得到邮差对象
-            Transport transport = session.getTransport();
-            // 连接自己的邮箱账户
-            transport.connect(from, pass);// 密码为QQ邮箱开通的stmp服务后得到的客户端授权码
-            // 发送邮件
-            transport.sendMessage(message, message.getAllRecipients());
-            transport.close();
-            return true;
-        } catch (MessagingException e) {
             e.printStackTrace();
         }
         return false;
