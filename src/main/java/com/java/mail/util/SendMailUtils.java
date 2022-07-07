@@ -17,7 +17,7 @@ import java.util.Properties;
  * 发送邮件工具
  * *
  */
-public class SendMailAcceUtils {
+public class SendMailUtils {
 
     /**
      * 发送带附件的邮件
@@ -210,5 +210,7 @@ public class SendMailAcceUtils {
         }
         return false;
     }
+
+
 
 }
